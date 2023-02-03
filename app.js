@@ -78,7 +78,11 @@ function addShipPiece(ship) {
       shipBlocks.push(allBoardBlocksComp[Number(randomStartIndex) + i * width]);
     }
   }
-  console.log(shipBlocks);
+  // console.log(shipBlocks);
+  shipBlocks.forEach((shipBlock) => {
+    shipBlock.classList.add(ship.name);
+    shipBlock.classList.add('taken'); //to know if the space was taken.
+  });
 }
 
-addShipPiece(destroyer);
+ships.forEach((ship) => addShipPiece(ship));

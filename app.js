@@ -43,7 +43,7 @@ function createBoard(color, user) {
 }
 
 createBoard('pink', 'player');
-createBoard('yellow', 'computer');
+createBoard('violet', 'computer');
 
 // Ships
 
@@ -67,22 +67,57 @@ function addShipPiece(ship) {
   let randomBoolean = Math.random() < 0.5;
   let isHorizontal = randomBoolean;
   let randomStartIndex = Math.floor(Math.random() * width * width); //to get a start point between 0 and 99.
-  console.log('randomStartIndex', randomStartIndex);
+  console.log('randomStartIndex', randomStartIndex, ship);
+
+  let validStartIndex = isHorizontal
+    ? randomStartIndex <= width * width - ship.length
+      ? randomStartIndex
+      : width * width - ship.length
+    : //handle vertical
+    randomStartIndex <= width * width - width * ship.length
+    ? randomStartIndex
+    : randomStartIndex - ship.length * width + width;
 
   let shipBlocks = [];
 
   for (let i = 0; i < ship.length; i++) {
     if (isHorizontal) {
-      shipBlocks.push(allBoardBlocksComp[Number(randomStartIndex) + i]);
+      shipBlocks.push(allBoardBlocksComp[Number(validStartIndex) + i]);
     } else {
-      shipBlocks.push(allBoardBlocksComp[Number(randomStartIndex) + i * width]);
+      shipBlocks.push(allBoardBlocksComp[Number(validStartIndex) + i * width]);
     }
   }
-  // console.log(shipBlocks);
-  shipBlocks.forEach((shipBlock) => {
-    shipBlock.classList.add(ship.name);
-    shipBlock.classList.add('taken'); //to know if the space was taken.
-  });
-}
 
+  let valid;
+
+  if (isHorizontal) {
+    shipBlocks.every(
+      (_shipBlock, index) =>
+        (valid =
+          shipBlocks[0].id % width !==
+          width - (shipBlocks.length - (index + 1)))
+    );
+  } else {
+    shipBlocks.every(
+      (_shipBlocks, index) =>
+        (valid = shipBlocks[0].id < 90 + (width * index + 1))
+    );
+  }
+
+  const notTakenSpace = shipBlocks.every(
+    (shipBlock) => !shipBlock.classList.contains('taken')
+  );
+
+  if (valid && notTakenSpace) {
+    // console.log(shipBlocks);
+    // adding ship to the board
+    shipBlocks.forEach((shipBlock) => {
+      shipBlock.classList.add(ship.name);
+      shipBlock.classList.add('taken'); //to know if the space was taken.
+    });
+  } else {
+    addShipPiece(ship);
+  }
+}
+// adding all ships to the board
 ships.forEach((ship) => addShipPiece(ship));

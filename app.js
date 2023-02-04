@@ -6,13 +6,11 @@ let angle = 0;
 
 function flip() {
   const optionShips = Array.from(optionContainer.children);
-
   // if (angle === 0) {
   //   angle = 90;
   // } else {
   //   angle = 0;
   // }
-
   angle = angle === 0 ? 90 : 0;
 
   optionShips.forEach(
@@ -61,22 +59,25 @@ const battleship = new Ship('battleship', 4);
 const carrier = new Ship('carrier', 5);
 
 const ships = [destroyer, submarine, cruiser, battleship, carrier];
+let notDropped;
 
-function addShipPiece(ship) {
-  const allBoardBlocksComp = document.querySelectorAll('#computer div');
+function addShipPiece(user, ship, startId) {
+  const allBoardBlocksComp = document.querySelectorAll(`#${user} div`);
   let randomBoolean = Math.random() < 0.5;
-  let isHorizontal = randomBoolean;
+  let isHorizontal = user === 'player' ? angle === 0 : randomBoolean;
   let randomStartIndex = Math.floor(Math.random() * width * width); //to get a start point between 0 and 99.
   console.log('randomStartIndex', randomStartIndex, ship);
 
+  let startIndex = startId ? startId : randomStartIndex;
+
   let validStartIndex = isHorizontal
-    ? randomStartIndex <= width * width - ship.length
-      ? randomStartIndex
+    ? startIndex <= width * width - ship.length
+      ? startIndex
       : width * width - ship.length
     : //handle vertical
-    randomStartIndex <= width * width - width * ship.length
-    ? randomStartIndex
-    : randomStartIndex - ship.length * width + width;
+    startIndex <= width * width - width * ship.length
+    ? startIndex
+    : startIndex - ship.length * width + width;
 
   let shipBlocks = [];
 
@@ -99,7 +100,7 @@ function addShipPiece(ship) {
     );
   } else {
     shipBlocks.every(
-      (_shipBlocks, index) =>
+      (_shipBlock, index) =>
         (valid = shipBlocks[0].id < 90 + (width * index + 1))
     );
   }
@@ -116,8 +117,42 @@ function addShipPiece(ship) {
       shipBlock.classList.add('taken'); //to know if the space was taken.
     });
   } else {
-    addShipPiece(ship);
+    if (user === 'computer') addShipPiece(ship);
+    if (user === 'player') notDropped = true;
   }
 }
-// adding all ships to the board
-ships.forEach((ship) => addShipPiece(ship));
+// adding all computer ships to the board
+ships.forEach((ship) => addShipPiece('computer', ship));
+
+// Dragging player ships
+
+let draggedShip;
+
+function dragStart(e) {
+  notDropped = false;
+  draggedShip = e.target;
+}
+
+function dragOver(e) {
+  e.preventDefault();
+}
+
+function dropShip(e) {
+  const startId = e.target.id;
+  const ship = ships[draggedShip.id];
+  addShipPiece('player', ship, startId);
+  if (!notDropped) {
+    draggedShip.remove();
+  }
+}
+
+const allPlayerBlocks = document.querySelectorAll('#player div');
+allPlayerBlocks.forEach((playerBlock) => {
+  playerBlock.addEventListener('dragover', dragOver);
+  playerBlock.addEventListener('drop', dropShip);
+});
+
+const optionShips = Array.from(optionContainer.children);
+optionShips.forEach((optionShip) =>
+  optionShip.addEventListener('dragstart', dragStart)
+);

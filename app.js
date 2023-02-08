@@ -1,6 +1,9 @@
 const flipButton = document.getElementById('flip-button');
 const optionContainer = document.querySelector('.option-container');
 const gameBoardContainer = document.getElementById('game-board-container');
+const startButton = document.getElementById('start-button');
+const infoDisplay = document.getElementById('info');
+const turnDisplay = document.getElementById('turn-display');
 
 let angle = 0;
 
@@ -107,7 +110,7 @@ function addShipPiece(user, ship, startId) {
   let randomBoolean = Math.random() < 0.5;
   let isHorizontal = user === 'player' ? angle === 0 : randomBoolean;
   let randomStartIndex = Math.floor(Math.random() * width * width); //to get a start point between 0 and 99.
-  console.log('randomStartIndex', randomStartIndex, ship);
+  // console.log('randomStartIndex', randomStartIndex, ship);
 
   let startIndex = startId ? startId : randomStartIndex;
 
@@ -188,3 +191,36 @@ function highlightArea(startIndex, ship) {
     });
   }
 }
+
+let gameOver = false;
+let playerTurn;
+let playerHits = [];
+let computerHits = [];
+
+function handleClick(e) {
+  if (!gameOver) {
+    if (e.target.classList.contains('taken')) {
+      e.target.classList.add('boom');
+      infoDisplay.textContent = 'You hit a ship!';
+      let classes = Array.from(e.target.classList);
+      classes = classes.filter((className) => className !== 'block');
+      classes = classes.filter((className) => className !== 'boom');
+      classes = classes.filter((className) => className !== 'taken');
+      playerHits.push(...classes);
+      console.log('playerHits', playerHits);
+    }
+  }
+}
+
+function startGame() {
+  if (optionContainer.children.length != 0) {
+    infoDisplay.textContent = 'Please place all you ships first!';
+  } else {
+    const allBoardBlocks = document.querySelectorAll('#computer div');
+    allBoardBlocks.forEach((block) =>
+      block.addEventListener('click', handleClick)
+    );
+  }
+}
+
+startButton.addEventListener('click', startGame);

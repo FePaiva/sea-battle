@@ -255,7 +255,7 @@ function handleClick(e) {
       classes = classes.filter((className) => className !== 'boom');
       classes = classes.filter((className) => className !== 'taken');
       playerHits.push(...classes);
-      console.log('playerHits', playerHits);
+      // console.log('playerHits', playerHits);
       checkScore('player', playerHits, playerSunkShips);
     }
     if (!e.target.classList.contains('taken')) {
@@ -270,13 +270,18 @@ function handleClick(e) {
 }
 
 function startGame() {
-  if (optionContainer.children.length != 0) {
-    infoDisplay.textContent = 'Please place all you ships first!';
-  } else {
-    const allBoardBlocks = document.querySelectorAll('#computer div');
-    allBoardBlocks.forEach((block) =>
-      block.addEventListener('click', handleClick)
-    );
+  if (playerTurn === undefined) {
+    if (optionContainer.children.length != 0) {
+      infoDisplay.textContent = 'Please place all you ships first!';
+    } else {
+      const allBoardBlocks = document.querySelectorAll('#computer div');
+      allBoardBlocks.forEach((block) =>
+        block.addEventListener('click', handleClick)
+      );
+      playerTurn = true;
+      infoDisplay.textContent = 'The game has started!';
+      turnDisplay.textContent = 'Your turn';
+    }
   }
 }
 
@@ -286,7 +291,19 @@ function checkScore(user, userHits, userSunkShips) {
       userHits.filter((storedShipName) => storedShipName === shipName)
         .length === shipLength
     ) {
-      infoDisplay.textContent = `You sunk the ${user}'s ${shipName}`;
+      if (user === 'player') {
+        infoDisplay.textContent = `You sunk the computer's ${shipName}`;
+        playerHits = userHits.filter(
+          (storedShipName) => storedShipName !== shipName //remove the sunk ship from the array.
+        );
+      }
+      if (user === 'computer') {
+        infoDisplay.textContent = `Your ${shipName} got sunk`;
+        computerHits = userHits.filter(
+          (storedShipName) => storedShipName !== shipName //remove the sunk ship from the array.
+        );
+      }
+      userSunkShips.push(shipName);
     }
   }
   checkShip('destroyer', 2);
@@ -297,6 +314,15 @@ function checkScore(user, userHits, userSunkShips) {
 
   console.log('playerHits', playerHits);
   console.log('playerSunkShips', playerSunkShips);
+
+  if (playerSunkShips.length === 5) {
+    infoDisplay.textContent = 'YOU WON THE WAR!';
+    gameOver = true;
+  }
+  if (computerSunkShips.length === 5) {
+    infoDisplay.textContent = 'YOU LOST THE WAR!';
+    gameOver = true;
+  }
 }
 
 startButton.addEventListener('click', startGame);
